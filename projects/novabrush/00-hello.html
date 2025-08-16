@@ -13,7 +13,7 @@
 
     <header>
         <div class="header">
-            <img class="header-left" src="img/edcub.gif" alt="Placeholder Logo">
+            <img class="header-left" src="/img/edcub.gif" alt="Placeholder Logo">
             <div class="header-right">
                 <p class="header-title">ED-Dev's personal website</p>
                 <p>
@@ -31,41 +31,58 @@
 
     <main>
         <header>
-            <h1>Welcome!</h1>
+            <h1>Hello Novabrush!</h1>
         </header>
 
         <div itemprop="articleBody">
-            <p>Welcome to my personal website! Currently, I'm developing NovaBrush, let's see where this will get us as time goes on. There might be a few devlogs explaining what's happening and what causes what.</p>
+            <p>NovaBrush is an experiment of some sorts. I'm doing this project as a "journey" so I can understand how software works in general, while at the same time, learning how to built it by myself.
+                I intend this to be a lightweight, responsible image editor built with C#. I really like programs that are instant, native and fast. Like ShareX and LibreOffice. I know Electron is used in the current era, but I prefer programs that have less bloat or delay, just click... and it's there.
+            </p>
+            <p>
+                Yes, as of today, this little project is only 2.85MBs. There are no frameworks or advanced libs. Just code and XAML. 
+            </p>
         </div>
 
-        <h2>Logs</h2>
-        <ul class="gridlist">
-            <li>
-                <a href="#">
-                    <div class="title">
-                        Hello NovaBrush!
-                    </div>
-                    <div class="desc">
-                        2025-08-15
-                    </div>
-                </a>
-            </li>
-			
-        </ul>
+        <h2>Why modular?</h2>
+        <p>
+            Now, sometimes I ask myself: "Why not just develop the image editor all at once?"
+            Because, honestly, I think it's overwhelming to do everything all at once, there's the risk of it turning into spaghetti code and then there's scope creep. I prefer doing it on small victory and decisions instead!
+            I'm developing one "microproject" at a time. One project will do layers, one project will do filters, one project will do the UI and so on. 
+            As of today, NovaBrush can:
+        </p>
 
-        <h2>Projects</h2>
-        <ul class="gridlist">
-             <li>
-                <a href="#">
-                    <div class="title">
-                        ...Nothing yet.
-                    </div>
-                    <div class="desc">
-                    </div>
-                </a>
-            </li>
-        </ul>
+        <li>
+            Generate an empty canvas
+        </li>
 
+        <li>
+            Zoom (Ctrl + Wheel)
+        </li>
+
+        <li>
+            Pan (Middle Mouse)
+        </li>
+
+        <li>
+            Open PNG Files
+        </li>
+
+        <li>
+            Check if same said files are valid
+        </li>
+
+        <p>
+            I'm using them as self-contained experiments, or puzzles to solve. Kinda like Legos. I'm also using Obsidian to get track of why something works and how everything intracts together. 
+            If possible, I can go back to old microprojects and add new functionalities that weren't in there before, like a smoother zooming or even hotkeys. 
+        </p>
+
+        <p>
+            That keeps me going, and I think it shows <b>growth</b> as well.
+        </p>
+
+        <p>
+            The point of this project basically is. If I can learn zooming, panning, and image loading from scratch... I can certainly learn React, state management, or even more complex UIs that respond to users.
+        </p>
     </main>
 
     <footer>
