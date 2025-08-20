@@ -40,7 +40,7 @@ body {
 }
 
 a {
-  color: var(--color-accent);
+  color: #b0b8c1;
   text-decoration: none;
   font-weight: 500;
 }
