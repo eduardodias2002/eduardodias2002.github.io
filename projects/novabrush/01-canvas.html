@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="generator" content="zola">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+    <meta name="description" content="How I built the canvas for NovaBrush — the foundation of my image editor">
+    <title>ED-Dev</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="icon" href="/img/icon.ico">
+</head>
+<body>
+    <header>
+        <div class="header">
+            <img class="header-left" src="/img/edcub.gif" alt="ED-Dev Logo">
+            <div class="header-right">
+                <p class="header-title">ED-Dev's personal website</p>
+                <p>
+                    software, development, things alike
+                </p>
+                <nav itemscope itemtype="http://schema.org/SiteNavigationElement">
+                    <a itemprop="url" href="../..">
+                        <span itemprop="name">Home</span>
+                    </a>
+                </nav>
+            </div>
+        </div>
+        <hr>
+    </header>
+
+    <main>
+        <div itemprop="articleBody">
+            <h2>A Blank 32×32</h2>
+            <p>
+                In Part 1, I introduced NovaBrush. My journey to build my own image editor from scratch. Now, let's go a little bit deeper.
+            </p>
+
+            <p>
+                This is how I made the canvas, which will be used as the beating heart of my graphics program.
+            </p>
+
+            <h2>What to Create</h2>
+            <p>
+                I didn't start with layers or filters. I started with one question:
+            </p>
+            <blockquote>
+                "What's the smallest thing that can create?"
+            </blockquote>
+            <p>
+                And the answer was simple, a pixel. Then, a row of pixels, and finally, columns of pixels. 
+            </p>
+
+            <p>
+                Here's how I created it:
+            </p>
+
+            <pre><code>private void CreateCanvas()
+{
+    canvasPanel = new CanvasPanel
+    {
+        Width = 32,
+        Height = 32,
+    };
+
+    MainCanvas.Children.Add(canvasPanel);
+}</code></pre>
+
+            <p>
+                It's pretty simple, yes. But that's the foundation. This <code>CanvasPanel</code> class may be a rectangle for now, but it will serve as the the space in which every pixel will be placed on. 
+            </p>
+
+            <h2>Why a Separate Class?</h2>
+            <p>
+                I could've done everything in <code>MainWindow</code>. But I really like the concept of <strong>modularity</strong>. One piece at a time, like Legos, so I am not overwhelmed as the program grows.
+            </p>
+            <p>
+                So I made <code>CanvasPanel</code> its own class. For now, it handles:
+            </p>
+            <ul>
+                <li>Panning (middle mouse)</li>
+                <li>Zooming (Ctrl + wheel)</li>
+                <li>Pixel placement</li>
+                <li>Rendering</li>
+            </ul>
+
+            <h2>Attaching to the Window</h2>
+            <p>
+                At first, I only listened for mouse events <i>inside</i> the canvas. The moment I dragged too fast, I'd "lose" the pan gesture! The mouse would leave the canvas, but the drag would still be active.
+            </p>
+            <p>
+                It was frustrating, definitely, a lot. 
+            </p>
+            <p>
+                So, I fixed it by attaching the event handlers to the window itself and not the canvas:
+            </p>
+
+            <pre><code>public CanvasPanel()
+{
+    Loaded += (_, __) =>
+    {
+        Window.GetWindow(this).PreviewMouseWheel += Window_PreviewMouseWheel;
+        Window.GetWindow(this).MouseDown += CanvasPanel_MouseDown;
+        Window.GetWindow(this).MouseMove += CanvasPanel_MouseMove;
+        Window.GetWindow(this).MouseUp += CanvasPanel_MouseUp;
+    };
+
+    _scaleTransform = new ScaleTransform(_currentZoom, _currentZoom);
+    RenderTransform = _scaleTransform;
+    RenderTransformOrigin = new Point(0, 0);
+}</code></pre>
+
+            <p>
+                Now, even if the mouse flies off the canvas, I still capture the movement. The pan feels fluid, not fragile.
+            </p>
+
+            <h2>RenderTransform > Scaling</h2>
+            <p>
+                I used to scale the canvas by changing its size, scaling it up and down. But that was kinda slow and layout intensive.
+            </p>
+            <p>
+                Now, it uses <code>RenderTransform</code> instead:
+            </p>
+            <pre><code>_scaleTransform = new ScaleTransform(_currentZoom, _currentZoom);
+RenderTransform = _scaleTransform;
+RenderTransformOrigin = new Point(0, 0);</code></pre>
+            <p>
+                This is GPU accelerated, so it's smooth, and doesn't trigger any layout recalculations. It's how other freeware graphics editors Paint.NET do it under the hood, basically. In the future, I intend adding a tweening so it feels even smoother and dynamic to use. But, let's keep things simple for now.
+            </p>
+
+            <h2>Now what?</h2>
+            <img src="/img/00_hello.webp">
+            <p>
+                The canvas is alive! But that's just the beginning.
+            </p>
+
+            <p>
+                As I said before, the program will be divided like Legos, with each "microproject" handling a set of functions so it can then be united into a single fully working program later on. 
+            </p>
+
+            <p class="post-nav">
+                ← <a href="00-hello.html">Back to Part 1</a> | <a href="02-image.html">Read Part 3: From File to Pixel →</a>
+            </p>
+        </div>
+    </main>
+
+    <footer>
+        Have feedback or want to say hi? 
+        <a class="mail" href="mailto:eduardodias2002@yahoo.com">E-mail me!</a>
+    </footer>
+</body>
+</html>

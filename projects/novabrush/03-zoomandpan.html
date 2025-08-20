@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="generator" content="zola">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+    <meta name="description" content="How I built zoom and pan for NovaBrush — from screen to world space">
+    <title>ED-Dev</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="icon" href="/img/icon.ico">
+</head>
+<body>
+    <header>
+        <div class="header">
+            <img class="header-left" src="/img/edcub.gif" alt="ED-Dev Logo">
+            <div class="header-right">
+                <p class="header-title">ED-Dev's personal website</p>
+                <p>
+                    software, development, things alike
+                </p>
+                <nav itemscope itemtype="http://schema.org/SiteNavigationElement">
+                    <a itemprop="url" href="../..">
+                        <span itemprop="name">Home</span>
+                    </a>
+                </nav>
+            </div>
+        </div>
+        <hr>
+    </header>
+    <main>
+        <div itemprop="articleBody">
+            <h2>Zooming & Panning</h2>
+            <p>
+                So, the image was loaded and the canvas is now breathing. But it’s still frozen in place. There's no zoom or pan. Just a static window into a world I can't explore yet.
+            </p>
+            <p>
+                So I decided to give it some motion.
+            </p>
+            <h2>Panning</h2>
+            <p>
+                This is the point where NovaBrush stopped being a simple image displayer, and began to act more like an editor, even if still basic, the foundations are still here.
+            </p>
+            <p>
+                I wanted panning to feel like sliding a sheet of paper across a desk.
+            </p>
+            <p>
+                So I began with the the middle mouse button instead of the right one instead, as I intend to make the left/mouse buttons as primary/secondary color brush inputs in the future.
+            </p>
+            <pre><code>private void CanvasPanel_MouseDown(object sender, MouseButtonEventArgs e)
+            {
+                if (e.MiddleButton == MouseButtonState.Pressed)
+                {
+                    _dragOffset = e.GetPosition(this);
+                    _isPanning = true;
+                    Mouse.Capture(this);
+                }
+            }</code></pre>
+            <p>
+                <code>_dragOffset</code> is the distance from the cursor to the top-left of the canvas. In world space, not screen space.
+                That’s the key. Without this, the canvas would “jump” under your cursor. With this, you're grabbing the canvas, not teleporting it. As I had issues with it constantly "jumping" around previously.
+            </p>
+            <p>
+                <code>_isPanning = true</code> acts like a switch. Are we in panning mode, yes or no? That's how it works basically.
+            </p>
+            <p>
+                <code>Mouse.Capture(this)</code> ensures we keep receiving mouse events, even if the cursor  leaves the window.
+            </p>
+
+            <pre><code>private void CanvasPanel_MouseMove(object sender, MouseEventArgs e){
+            Point worldPos = e.GetPosition(this);
+            Globals.MousePositionLabel.Text = $"X: {(int)worldPos.X}  Y: {(int)worldPos.Y}";
+
+            if (_isPanning)
+            {
+                Point mousePos = e.GetPosition(Parent as UIElement);
+
+                double newLeft = mousePos.X - _dragOffset.X * (_currentZoom);
+                double newTop = mousePos.Y - _dragOffset.Y * (_currentZoom);
+
+                double clampNewLeft = Math.Clamp(newLeft, (0) - BitmapToDraw.PixelWidth  * (_currentZoom), Globals.CanvasPanelLabel.ActualWidth); 
+                double clampNewTop = Math.Clamp(newTop, (0) - BitmapToDraw.PixelHeight * (_currentZoom), Globals.CanvasPanelLabel.ActualHeight); 
+
+                Canvas.SetLeft(this, (int)clampNewLeft);
+                Canvas.SetTop(this, (int)clampNewTop);
+            }
+        }</code></pre>
+                
+            <p>
+            That if <code>_isPanning</code> check is crucial.
+            Without it, the canvas would move every time the mouse moves, even during normal hovering or drawing.
+            It ensures motion only happens when intended.
+            </p>
+
+            <p>Now for it to end, the user has to release control, that is, the middle mouse button. For that, I implemented:</p>
+
+            <pre><code>private void CanvasPanel_MouseUp(object sender, MouseButtonEventArgs e)
+            {
+                if (e.MiddleButton == MouseButtonState.Released)
+                {
+                    _isPanning = false;
+                    Mouse.Capture(null);
+                }
+            }</code></pre>
+
+            <video autoplay="" loop="" muted="" playsinline="" style="height: 12cm;">
+            <source src="/video/03_vid_1.webm" type="video/webm">
+            Your browser does not support the video tag.
+            </video>
+
+            <h2>Zooming</h2>
+            <p>
+                Zooming seemed pretty simple at first, you make "things bigger.""
+                But real, actual zooming the kind you see in most apps and programs does something a little bit deeper.
+            </p>
+            <p>
+                It zooms in <em>towards</em> the cursor's coordinates.
+            </p>
+                The point under your cursor stays fixed. The world expands around it. To do this, I had to learn the difference between:
+            </p>
+            <ul>
+                <p><b>Screen space:</b> Where the mouse is currently in your display</li>
+                <p><b>World space:</b> Which <b>pixel</b> in the image is currently under the cursor</li>
+            </ul>
+            <p>
+                Here's how I made it work:
+            </p>
+            <pre><code>private void Window_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+{
+    if (Keyboard.Modifiers == ModifierKeys.Control)
+    {
+        e.Handled = true;
+        Point mousePos = e.GetPosition(Parent as UIElement);
+        double oldZoom = _currentZoom;
+
+        double worldX = (mousePos.X - Canvas.GetLeft(this)) / oldZoom;
+        double worldY = (mousePos.Y - Canvas.GetTop(this)) / oldZoom;
+
+        double zoomFactor = e.Delta > 0 ? 1.1 : 1 / 1.1;
+        _currentZoom = Math.Clamp(_currentZoom * zoomFactor, 0.1, 10.0);
+
+        double newLeft = mousePos.X - (worldX * _currentZoom);
+        double newTop = mousePos.Y - (worldY * _currentZoom);
+
+        _scaleTransform.ScaleX = _currentZoom;
+        _scaleTransform.ScaleY = _currentZoom;
+        Canvas.SetLeft(this, newLeft);
+        Canvas.SetTop(this, newTop);
+
+        InvalidateVisual();
+    }
+}</code></pre>
+            <p>
+                Pretty straight forward, it gets the mouse position in the element, it converts the screen position as a world coodinate as <code>WorldX</code> and <code>WorldY</code>.
+            </p>
+            <p>
+                Then, it appleis zooming with the mouse wheel, for example, to not do if-else, I simply used delta. If it's above 0, up. Below 0, down. 
+                <code>_currentZoom</code> then limits the zoom amount by what I I will interpret as 10% to 1000%.
+            </p>
+            <p>
+                After that, it keeps the same world point under the mouse on both axis as <code>newLeft</code> and <code>newTop</code>.
+            </p>
+            <p>
+                Finally, it applies it and then uses our old friend <code>InvalidateVisual</code> to update the screen visually.
+            </p>
+
+            <video autoplay="" loop="" muted="" playsinline="" style="height: 12cm;">
+            <source src="/video/03_vid_2.webm" type="video/webm">
+            Your browser does not support the video tag.
+            </video>
+
+            <h2>Clamp Saves</h2>
+            <p>
+                At first, panning broke when zoomed. The canvas would "get lost." 
+            </p>
+            <p>
+                Why? Because I wasn't accounting for the current window size, so it wasn't dynamic.
+            <p>
+                For example, a 800px canvas at 3x zoom is 2400px wide. The panning bounds must reflect that change now, and it's always dynamic.
+            </p>
+            <p>
+                So, I updated the clamp as follows:
+            </p>
+            <pre><code>double clampNewLeft = Math.Clamp(
+    newLeft, 
+    -BitmapToDraw.PixelWidth * _currentZoom, 
+    Globals.CanvasPanelLabel.ActualWidth
+);</code></pre>
+            <p>
+                Now, no matter the zoom level OR the image size, you can always pan it back so you can see the image again.
+            </p>
+
+            <video autoplay="" loop="" muted="" playsinline="" style="height: 12cm;">
+            <source src="/video/03_vid_3.webm" type="video/webm">
+            Your browser does not support the video tag.
+            </video>
+
+            <h2>End Result</h2>
+            <p>
+                The canvas is now responsive! Pans, zooms, zooms and pans without any issues.
+            </p>
+            <p>
+                But, it still can't be changed or modified. It will  though, eventually. I intend developing a brush engine! However, I gotta start with something simple like placing a single pixel on a canvas before I can move to other tools.
+            </p>
+            <p class="post-nav">
+                ← <a href="/projects/novabrush/02-image.html">Back to Part 3: From File to Pixel</a>
+            </p>
+        </div>
+    </main>
+    <footer>
+        Have feedback or want to say hi? 
+        <a class="mail" href="mailto:eduardodias2002@yahoo.com">E-mail me!</a>
+    </footer>
+</body>
+</html>

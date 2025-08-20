@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="generator" content="zola">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+    <meta name="description" content="How I loaded images into NovaBrush — from file to pixel">
+    <title>ED-Dev</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="icon" href="/img/icon.ico">
+</head>
+<body>
+    <header>
+        <div class="header">
+            <img class="header-left" src="/img/edcub.gif" alt="ED-Dev Logo">
+            <div class="header-right">
+                <p class="header-title">ED-Dev's personal website</p>
+                <p>
+                    software, development, things alike
+                </p>
+                <nav itemscope itemtype="http://schema.org/SiteNavigationElement">
+                    <a itemprop="url" href="../..">
+                        <span itemprop="name">Home</span>
+                    </a>
+                </nav>
+            </div>
+        </div>
+        <hr>
+    </header>
+    <main>
+        <div itemprop="articleBody">
+            <h2>From File to Pixel</h2>
+            <p>
+                Recently, I built a canvas. A 32×32 grid that just exists, but it's still blank nonetheless.
+            </p>
+            <p>
+                Now, it’s time to give it some purpose!
+            </p>
+
+            <h2>Turning Data into Pixels</h2>
+            <p>
+                I didn't want NovaBrush to just draw. I wanted it to images.
+            </p>
+            <p>
+                The thought process is not that hard, really, it's pretty straight forward.
+            </p>
+            <blockquote>
+                "How do I get a file on disk... and then turn it into something that can be displayed pixel by pixel?"
+            </blockquote>
+            <p>
+                All I needed were three easy steps, find the file with OpenFileDialog, decode it into a <code>BitmapImage</code> and make it editable by converting it to a <code>WriteableBitmap</code>.
+            </p>
+
+            <h2>The Loading Pipeline</h2>
+            <p>
+                When you click "Open", this is what happens:
+            </p>
+            <pre><code>string filename = ofd.FileName;
+            BitmapImage bitmapImage = new BitmapImage(new Uri(filename));
+            WriteableBitmap writable = new WriteableBitmap(bitmapImage);
+            canvasPanel.LoadBitmap(writable);</code></pre>
+            <p>
+                That’s it. Four lines. But each one is a gateway:
+            </p>
+            <ul>
+                <li><code>BitmapImage</code> is WPF's fast, built in image decoder. Handles multiple file formats, but as of now I want to focus on .PNG solely.</li>
+                <li><code>WriteableBitmap</code> is the wrapper that makes the image editable. Without this, I couldn't draw little less edit with it.</li>
+                <li><code>LoadBitmap()</code> My own method, from the <code>canvasPanel</code> class.</li>
+            </ul>
+
+            <video autoplay loop muted playsinline>
+            <source src="/video/02_vid_1.webm" type="video/webm">
+            Your browser does not support the video tag.
+            </video>
+
+            <h2>Placing the Dots</h2>
+            <p>
+                Inside <code>CanvasPanel</code>, <code>LoadBitmap()</code> does two things:
+            </p>
+            <pre><code>public void LoadBitmap(WriteableBitmap bitmap) {
+            this.BitmapToDraw = bitmap;
+            InvalidateVisual();
+            }</code></pre>
+
+            <p>
+                <code>BitmapToDraw</code> is the heart. The pixel buffer that holds the image. Technically, this is the actual canvas itself if I want to "get it" from code alone, since this isn't an element you insert with XAML.
+            </p>
+            <p>
+                And <code>InvalidateVisual()</code>? It's simply a way to tell the program:
+            </p>
+            <blockquote>
+                "Something has changed, wake up."
+            </blockquote>
+            <p>
+                It doesn't force a render right away, but requests one. And when ready, it calls <code>OnRender()</code>.
+            </p>
+
+            <h2>The Brush</h2>
+            <p>
+                <code>OnRender()</code> is where the canvas actually becomes becomes real. It's the final act of translation from raw data to visible malleable pixels.
+            </p>
+            <pre><code>protected override void OnRender(DrawingContext dc) {
+    base.OnRender(dc);
+
+    if (BitmapToDraw != null) {
+        dc.DrawImage(
+            BitmapToDraw, 
+            new Rect(0, 0, BitmapToDraw.PixelWidth * PixelVal, BitmapToDraw.PixelHeight * PixelVal)
+        );
+    }
+}</code></pre>
+            <p>
+                And now, the image appears on screen.
+            </p>
+            <p>
+                <code>dc.DrawImage()</code> takes the raw pixels and paints them onto the screen. The <code>Rect</code> scales it by <code>PixelVal</code>. Which is set to 1.0.
+            </p>
+            <p>
+                And yes... <code>PixelVal</code> only affects <em>how</em> it’s drawn, not <em>where</em> it lives. The canvas still knows its world in pure pixels. This is how we keep zoom and pan feeling natural. If you change it by 1.2 or 1.4 on either axis, it only distorts the vision itself, not the image.
+            </p>
+
+            <h2>Now What?</h2>
+
+            <video autoplay loop muted playsinline>
+            <source src="/video/02_vid_2.webm" type="video/webm">
+            Your browser does not support the video tag.
+            </video>
+
+            <p>
+                The canvas is no longer empty. It carries images now. It remembers them.
+            </p>
+            <p>
+                But seeing isn’t enough.
+            </p>
+            <p>
+                After that, I will develop ways in which NovaBrush can zoom in and out to see closer and pan.
+            </p>
+            <p class="post-nav">
+                ← <a href="01-canvas.html">Back to Part 2: A Blank 32×32</a> | <a href="03-zoomandpan.html">Read Part 3: Zoom and Pan →</a>
+            </p>
+        </div>
+    </main>
+    <footer>
+        Have feedback or want to say hi? 
+        <a class="mail" href="mailto:eduardodias2002@yahoo.com">E-mail me!</a>
+    </footer>
+</body>
+</html>
