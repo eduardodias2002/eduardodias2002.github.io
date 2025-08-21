@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="generator" content="zola">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="How I built zoom and pan for NovaBrush — from screen to world space">
+    <title>ED-Dev</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="icon" href="/img/icon.ico">
+</head>
+<body>
+    <header>
+        <div class="header">
+            <img class="header-left" src="/img/edcub.gif" alt="ED-Dev Logo">
+            <div class="header-right">
+                <p class="header-title">ED-Dev's personal website</p>
+                <p>
+                    software, development, things alike
+                </p>
+                <nav itemscope itemtype="http://schema.org/SiteNavigationElement">
+                    <a itemprop="url" href="../..">
+                        <span itemprop="name">Home</span>
+                    </a>
+                </nav>
+            </div>
+        </div>
+        <hr>
+    </header>
+        <main>
+        <h1>Blank Canvas & Pixel Placing</h1>
+        <p>
+            Before there was zoom, before there was panning, before I can put the first pixel on screen, there should be a Canvas to draw on.
+            For this, I will not use a container or a placeholder. Instead, I will use some alternative instead.
+        </p>
+        <p>
+            I didn't know how to build an image editor.  
+            But I could make one thing, a space where something might one day pixels should be placed.
+        </p>
+
+        <h2>The Blank Sheet</h2>
+        <p>
+            As of now, when NovaBrush starts, there's no wizard or splash screen, it simply opens up with a 32x32 canvas.
+        </p>
+        <p>
+            This wasn’t automatic, however. I had to create it not visually but in memory.
+        </p>
+
+        <pre><code>private WriteableBitmap _canvasBitmap;
+
+public void CreateCanvas(int width = 32, int height = 32)
+{
+    _canvasBitmap = new WriteableBitmap(
+        width, height,
+        96, 96,                    // DPI
+        PixelFormats.Bgra32,       // 32-bit color
+        null                       // No palette
+    );
+
+    FillCanvasWithColor(0xFFFFFFFF); // White
+}</code></pre>
+
+        <p>
+            This sets up the width, height, the DPI (which is 96 for each,) and the format which is in 32-bit color. As of now, there's no "palette" so the last parameter is set to null.
+            Lastly, the method <code>FillCanvasWithColor</code> uses the hexadecimal value of <code>#FFFFFFFF</code> to make it completely white, the alpha channel (transparency) is also considered.
+        </p>
+
+        <h2>Why WriteableBitmap?</h2>
+        <p>
+            I could’ve used <code>Image</code> + <code>RenderTargetBitmap</code>.  
+            Or <code>System.Drawing</code> — the old-school way.
+        </p>
+        <p>
+            But I chose <code>WriteableBitmap</code> because it’s <b>fast</b>, <b>native to WPF</b>, and gives me <b>direct memory access</b>.
+        </p>
+        <p>
+            This isn’t just drawing.  
+            This is <i>injecting color into memory</i>.
+        </p>
+
+        <h2>Placing the First Pixel</h2>
+        <p>
+            Before I can implement brushes, tools or make use of global classes, I just need to place a single pixel.
+        </p>
+        <p>
+            This is the <code>SetPixel</code> method, where it's only applied with a left mouse click inside the canvas. Nothing happens outside of it, basically.
+        </p>
+
+        <pre><code>public void SetPixel(int x, int y, Color color)
+{
+    if (BitmapToDraw == null) return;
+    BitmapToDraw.Lock();
+
+    unsafe
+    {
+        int bytesPerPixel = (BitmapToDraw.Format.BitsPerPixel + 7) / 8;
+        int stride = BitmapToDraw.BackBufferStride;
+        IntPtr buffer = BitmapToDraw.BackBuffer;
+
+        if (x < 0 || y < 0 || x >= BitmapToDraw.PixelWidth || y >= BitmapToDraw.PixelHeight)
+            return;
+
+        byte* pixel = (byte*)buffer + y * stride + x * bytesPerPixel;
+
+        pixel[0] = color.B;
+        pixel[1] = color.G;
+        pixel[2] = color.R;
+        pixel[3] = color.A;
+    }
+
+    BitmapToDraw.AddDirtyRect(new Int32Rect(x, y, 1, 1));
+    BitmapToDraw.Unlock();
+    InvalidateVisual();
+}</code></pre>
+    And below there's some basic logic that applies the previous <code>SetPixel</code> to mouse input.
+    
+    <pre><code>private void CanvasPanel_UseTool(object sender, MouseButtonEventArgs e){
+            if (e.LeftButton == MouseButtonState.Pressed){
+                Point mousePos = e.GetPosition(this);
+                int x = (int)(mousePos.X / PixelVal);
+                int y = (int)(mousePos.Y / PixelVal);
+                SetPixel(x, y, Color.FromArgb(255, 255, 0, 0)); // Paints black (temp)
+            }
+        }
+    </code></pre>
+    
+        <h2>What This Really Does</h2>
+            <p><b>Lock()</b>: It secures the memory buffer. No one else touches it in the mean time.</p>
+            <p><b>unsafe</b>: We're working with raw pointers, so it has that to be in there.</p>
+            <p><b>stride</b>: That's more thatn width, it's width with memory.</p>
+            <p><b>pixel = buffer + y * stride + x * bpp</b>: The exact address of a single pixel</p>
+            <p><b>AddDirtyRect</b>: It's tells our program that a single dot has to be added,</p>
+            <p><b>Unlock()</b>: Releases the buffer. The process is done..</p>
+
+        <p>
+            This method doesn’t just set a pixel.  
+            It tells me that an image basically is a block of memory, interpreted as pixels in a grid, with color.</b>
+            Despite being functional, this is for a single mouse click, not for when the left mouse button is being held down.
+        </p>
+
+            <video autoplay="" loop="" muted="" playsinline="" style="height: 12cm;">
+            <source src="/video/04_vid_1.webm" type="video/webm">
+            Your browser does not support the video tag.
+            </video>
+
+        <h2>Small Addendum and Wrapping It Up</h2>
+        <p>
+            I thought most apps started with the UI, but it appears that it's mainly with memory.
+        </p>
+        <p>
+            I also forgot to show the bottom toolbar, it was very useful to me while I was fixing border limits. It also considers zooming and panning as well, for different window sizes and even display resolutions.
+        </p>
+
+        <video autoplay="" loop="" muted="" playsinline="" style="height: 12cm;">
+        <source src="/video/04_vid_2.webm" type="video/webm">
+        Your browser does not support the video tag.
+        </video>
+
+        <div class="post-nav">
+            ← <a href="/projects/novabrush/03-zoomandpan.html">Zooming & Panning</a>
+        </div>
+    </main>
+
+    <footer>
+        Have feedback or want to say hi? <a class="mail" href="mailto:eduardodias2002@yahoo.com">E-mail me!</a>
+    </footer>
+</body>
+</html>
