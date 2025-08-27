@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="generator" content="zola">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="How I built the brush system and ITool interface for NovaBrush">
+    <title>ED-Dev</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="icon" href="/img/icon.ico">
+</head>
+<body>
+    <header>
+        <div class="header">
+            <img class="header-left" src="/img/edcub.gif" alt="ED-Dev Logo">
+            <div class="header-right">
+                <p class="header-title">ED-Dev's personal website</p>
+                <p>
+                    software, development, things alike
+                </p>
+                <nav itemscope itemtype="http://schema.org/SiteNavigationElement">
+                    <a itemprop="url" href="../..">
+                        <span itemprop="name">Home</span>
+                    </a>
+                </nav>
+            </div>
+        </div>
+        <hr>
+    </header>
+    <main>
+        <h1>The Brush System and ITool</h1>
+        <p>
+            Before there was smooth drawing, before there was pressure, before I could drag a line across the canvas —  
+            there was a problem:  
+            <b>How do you make tools that feel alive?</b>
+        </p>
+        <p>
+            I had pixels.  
+            I had a canvas.  
+            But I didn't have intention.
+        </p>
+        <p>
+            So I built its a nervous system. One that could carry the user's will... From button to brush.
+        </p>
+
+        <h2>The Problem With Copy-Paste Logic</h2>
+        <p>
+            At first, every tool had its own event handler.  
+            Pencil had <code>btn_pencil_Click</code>.  
+            Eraser had <code>btn_eraser_Click</code>.  
+            Brush had <code>btn_brush_Click</code>.  
+            And if I added a spray tool? Yet another handler.
+        </p>
+        <p>
+            It worked... Sure, but it felt wrong.
+        </p>
+        <p>
+            I didn't want ten methods.
+            I wanted just one, and then expand as new tools are added.
+        </p>
+
+        <h2>ITool</h2>
+        <p>
+            I created an interface, the <code>ITool</code> to define what every tool must do:
+        </p>
+        <pre><code>public interface ITool{
+        public void SetPixel(WriteableBitmap bitmap, int x, int y, Color color);
+        public void DrawLine(WriteableBitmap bitmap, int x1, int y1, int x2, int y2, Color color);
+    }</code></pre>
+        <p>
+            This is kinda like a contract between all tools, basically. Sorta like "If you are a tool, you MUST have these events."
+        </p>
+        <p>
+            Now, no matter if it's a pencil, eraser, or brush... they all speak the same dialect!
+        </p>
+
+        <h2>Implementing the Tools</h2>
+        <p>
+            I rewrote <code>bsh_pencil.cs</code>, <code>bsh_eraser.cs</code>, and <code>bsh_brush.cs</code> to implement <code>ITool</code>.
+        </p>
+        <p>
+            For example, <code>bsh_brush.cs</code> would follow a formula like:
+        </p>
+        <pre><code>DrawLine();        // Draws a line between two points using pixels
+SetPixel();        // Draws a pixel with brush size applied
+DrawWithSize();    // Draws a circular brush stroke around a point
+SetPixelAA();      // Draws a pixel with anti-aliasing (smooth edges)
+SetPixelNoAA();    // Draws a pixel without anti-aliasing (hard edges)</code></pre>
+        <p>
+            Now the brush does more than just placing pixels previously, it first begins by using the methods above by getting the current tool out of a dictionary.
+            When the mouse is held down, moving, and then released.  Three actions. In cases like the pencil, where it's contradictory since it's always 1px without AA, the method is simplified instead.
+        </p>
+
+        <h2>Connecting Tools to the UI</h2>
+        <p>
+            I removed all ten click handlers. I replaced them with just one:
+        </p>
+        <pre><code>private void ToolButton_Click(object sender, RoutedEventArgs e)
+{
+    if (sender is FrameworkElement button)
+    {
+        Globals.CurrentTool = Globals.Tools[button.Tag.ToString()];
+        HighlightActiveTool(button);
+    }
+}</code></pre>
+        <p>
+            Now, when you click “Pencil”, it doesn't run a method.  
+            It <b>becomes</b> the pencil!
+        </p>
+        <p>
+            The button carries the name, the system carries the intent and the canvas responds accordingly.
+        </p>
+
+        <h2>Why This Matters</h2>
+        <p>
+            I developed these tools this way because I know that there might be new tools in the future, so, for modularity's sake, I decided to just make X use the same methods of Y, while Y behaves like Z for every different tool.
+            That's my design philosophy, basically. Kinda based on Game Development.
+        </p>
+        <p>
+            With <code>ITool</code>, it's no longer a collection of features
+            But now, it's a platform that can open spaces for future tools such as a:
+        </p>
+        <ul>
+            <li>Spray tool</li>
+            <li>Line tool</li>
+            <li>Color picker</li>
+            <li>Even layers, someday?</li>
+        </ul>
+        <p>
+            At least I'm glad the foundation is here.
+        </p>
+
+        <h2>Pressure & Anti-Aliasing</h2>
+        <p>
+            I tried adding pressure simulation with F5/F6 to change <code>Pressure</code> on <code>bsh_brush.cs</code>
+            for example, and... It kinda works? But, I will let it for later. 
+        </p>
+        <p>
+            And with a global toggle, users can switch between:
+        </p>
+        <ul>
+            <li><b>Soft mode</b>: Blended, realistic strokes</li>
+            <li><b>Hard mode</b>: Crisp, pixel-perfect lines</li>
+        </ul>
+        <p>
+            So, you can use it for multiple other purposes! There's no color picking though.
+        </p>
+
+        <video autoplay="" loop="" muted="" playsinline="" style="width: 100%;">
+            <source src="/video/05_vid_1.webm" type="video/webm">
+            Your browser does not support the video tag.
+        </video>
+
+        <h2>What This Really Does</h2>
+        <p><b>ITool</b>: It's not a class. It's a role. Basically gives a "contract" for all other tools.</p>
+        <p><b>Globals.CurrentTool</b>: The conductor, it lets the program know what tool you're currently using. Like, Eraser, Brush and Pencil.</p>
+        <p><b>DrawLine with Bresenham</b>: That method is being used so a line is drawn before placing pixels. Before, it would have issue with "pixels being lost" when the canvas is very zoomed out.</p>
+        <p><b>SetPixel with blending</b>: Now it blends! Like real ink.</p>
+        <p>
+            This system doesn't just draw.  
+            Now the program understands the difference between a pencil and a brush. Not by size, but by behavior.
+        </p>
+
+        <video autoplay="" loop="" muted="" playsinline="" style="width: 100%;">
+            <source src="/video/05_vid_2.webm" type="video/webm">
+            Your browser does not support the video tag.
+        </video>
+
+        <div class="post-nav">
+            ← <a href="/projects/novabrush/04-placepixel.html">Blank Canvas & Pixel Placing</a>
+        </div>
+    </main>
+    <footer>
+        Have feedback or want to say hi? <a class="mail" href="mailto:eduardodias2002@yahoo.com">E-mail me!</a>
+    </footer>
+</body>
+</html>
