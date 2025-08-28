@@ -104,8 +104,8 @@ SetPixelNoAA();    // Draws a pixel without anti-aliasing (hard edges)</code></p
     }
 }</code></pre>
         <p>
-            Now, when you click “Pencil”, it doesn't run a method.  
-            It <b>becomes</b> the pencil!
+            Now, when you click "Pencil", the program will then call a method inside the <code>Globals</code> class that makes it understand that what you're "holding" right now is a pencil!
+            And for visual feedback, the method "HighlightActiveTool" is called to give the user some visual feedback.
         </p>
         <p>
             The button carries the name, the system carries the intent and the canvas responds accordingly.
@@ -133,14 +133,14 @@ SetPixelNoAA();    // Draws a pixel without anti-aliasing (hard edges)</code></p
         <h2>Pressure & Anti-Aliasing</h2>
         <p>
             I tried adding pressure simulation with F5/F6 to change <code>Pressure</code> on <code>bsh_brush.cs</code>
-            for example, and... It kinda works? But, I will let it for later. 
+            for example, and... It kinda works? But, I will let that for later. 
         </p>
         <p>
             And with a global toggle, users can switch between:
         </p>
         <ul>
-            <li><b>Soft mode</b>: Blended, realistic strokes</li>
-            <li><b>Hard mode</b>: Crisp, pixel-perfect lines</li>
+            <li><b>Anti-Aliasing ON</b>: Blended, realistic strokes</li>
+            <li><b>Anti-Aliasing OFF</b>: Crisp, pixel-perfect lines</li>
         </ul>
         <p>
             So, you can use it for multiple other purposes! There's no color picking though.
@@ -152,13 +152,12 @@ SetPixelNoAA();    // Draws a pixel without anti-aliasing (hard edges)</code></p
         </video>
 
         <h2>What This Really Does</h2>
-        <p><b>ITool</b>: It's not a class. It's a role. Basically gives a "contract" for all other tools.</p>
+        <p><b>ITool</b>: Basically, this is the backbone that makes the brush engine work. It gives a "contract" for all other tools.</p>
         <p><b>Globals.CurrentTool</b>: The conductor, it lets the program know what tool you're currently using. Like, Eraser, Brush and Pencil.</p>
-        <p><b>DrawLine with Bresenham</b>: That method is being used so a line is drawn before placing pixels. Before, it would have issue with "pixels being lost" when the canvas is very zoomed out.</p>
+        <p><b>DrawLine with</b> <a href="https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm">Bresenham's line algorithm</a>: That method is being used so a line is drawn before placing pixels. Before, it would have issue with "pixels being lost" when the canvas is very zoomed out.</p>
         <p><b>SetPixel with blending</b>: Now it blends! Like real ink.</p>
         <p>
-            This system doesn't just draw.  
-            Now the program understands the difference between a pencil and a brush. Not by size, but by behavior.
+            Now the program understands the difference between a pencil and a brush. Not by size, but by behavior set by each individual class.
         </p>
 
         <video autoplay="" loop="" muted="" playsinline="" style="width: 100%;">
