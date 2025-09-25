@@ -1,26 +1,26 @@
 {
   "files": {
-    "main.css": "/eduardodias2002/static/css/main.c5cc92a2.css",
-    "main.js": "/eduardodias2002/static/js/main.665a65a4.js",
-    "static/js/488.fecd9582.chunk.js": "/eduardodias2002/static/js/488.fecd9582.chunk.js",
-    "static/media/03_vid_3.webm": "/eduardodias2002/static/media/03_vid_3.5b8cedc2fc025565c169.webm",
-    "static/media/03_vid_2.webm": "/eduardodias2002/static/media/03_vid_2.a8575162b8bdf3ad99bb.webm",
-    "static/media/04_vid_2.webm": "/eduardodias2002/static/media/04_vid_2.57d5972e52c290eca113.webm",
-    "static/media/03_vid_1.webm": "/eduardodias2002/static/media/03_vid_1.10b1081b030fd7feb2bd.webm",
-    "static/media/05_vid_1.webm": "/eduardodias2002/static/media/05_vid_1.2d99472cb796df7a0bb2.webm",
-    "static/media/05_vid_2.webm": "/eduardodias2002/static/media/05_vid_2.523da70fcf7eca8309e3.webm",
-    "static/media/04_vid_1.webm": "/eduardodias2002/static/media/04_vid_1.46617ff71ca7c43982f3.webm",
-    "static/media/02_vid_2.webm": "/eduardodias2002/static/media/02_vid_2.b2ea0bc67b585b8df6b9.webm",
-    "static/media/edcub.gif": "/eduardodias2002/static/media/edcub.f0ee680c13970eb5bc9e.gif",
-    "static/media/02_vid_1.webm": "/eduardodias2002/static/media/02_vid_1.f82daa4ed63515a359c8.webm",
-    "static/media/icon.ico": "/eduardodias2002/static/media/icon.87d8d3a1f10fee78a777.ico",
-    "index.html": "/eduardodias2002/index.html",
-    "main.c5cc92a2.css.map": "/eduardodias2002/static/css/main.c5cc92a2.css.map",
-    "main.665a65a4.js.map": "/eduardodias2002/static/js/main.665a65a4.js.map",
-    "488.fecd9582.chunk.js.map": "/eduardodias2002/static/js/488.fecd9582.chunk.js.map"
+    "main.css": "/eduardodias2002.github.io/static/css/main.c5cc92a2.css",
+    "main.js": "/eduardodias2002.github.io/static/js/main.805a8f9c.js",
+    "static/js/488.fecd9582.chunk.js": "/eduardodias2002.github.io/static/js/488.fecd9582.chunk.js",
+    "static/media/03_vid_3.webm": "/eduardodias2002.github.io/static/media/03_vid_3.5b8cedc2fc025565c169.webm",
+    "static/media/03_vid_2.webm": "/eduardodias2002.github.io/static/media/03_vid_2.a8575162b8bdf3ad99bb.webm",
+    "static/media/04_vid_2.webm": "/eduardodias2002.github.io/static/media/04_vid_2.57d5972e52c290eca113.webm",
+    "static/media/03_vid_1.webm": "/eduardodias2002.github.io/static/media/03_vid_1.10b1081b030fd7feb2bd.webm",
+    "static/media/05_vid_1.webm": "/eduardodias2002.github.io/static/media/05_vid_1.2d99472cb796df7a0bb2.webm",
+    "static/media/05_vid_2.webm": "/eduardodias2002.github.io/static/media/05_vid_2.523da70fcf7eca8309e3.webm",
+    "static/media/04_vid_1.webm": "/eduardodias2002.github.io/static/media/04_vid_1.46617ff71ca7c43982f3.webm",
+    "static/media/02_vid_2.webm": "/eduardodias2002.github.io/static/media/02_vid_2.b2ea0bc67b585b8df6b9.webm",
+    "static/media/edcub.gif": "/eduardodias2002.github.io/static/media/edcub.f0ee680c13970eb5bc9e.gif",
+    "static/media/02_vid_1.webm": "/eduardodias2002.github.io/static/media/02_vid_1.f82daa4ed63515a359c8.webm",
+    "static/media/icon.ico": "/eduardodias2002.github.io/static/media/icon.87d8d3a1f10fee78a777.ico",
+    "index.html": "/eduardodias2002.github.io/index.html",
+    "main.c5cc92a2.css.map": "/eduardodias2002.github.io/static/css/main.c5cc92a2.css.map",
+    "main.805a8f9c.js.map": "/eduardodias2002.github.io/static/js/main.805a8f9c.js.map",
+    "488.fecd9582.chunk.js.map": "/eduardodias2002.github.io/static/js/488.fecd9582.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.c5cc92a2.css",
-    "static/js/main.665a65a4.js"
+    "static/js/main.805a8f9c.js"
   ]
 }
